@@ -1,0 +1,12 @@
+# Core analyzer (pull_calls.py)
+requests
+
+# Telegram ingestion (scan_telegram.py)
+telethon            # SOURCE="telethon" path only
+beautifulsoup4      # SOURCE="web" path
+python-dotenv
+
+# Dashboard (dashboard.py)
+streamlit
+plotly
+pandas

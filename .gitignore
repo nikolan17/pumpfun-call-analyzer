@@ -1,0 +1,19 @@
+# Secrets / credentials — never commit
+.env
+*.session
+*.session-journal
+
+# Python
+__pycache__/
+*.pyc
+
+# Raw OHLCV is large and regenerated each run — keep it out of the repo.
+# (The workflow commits only calls_detected.csv, calls_analysis.csv, last_updated.txt.)
+ohlcv/
+
+# Local logs
+streamlit_boot.log
+
+# Streamlit machine-local files (regenerated)
+.streamlit/credentials.toml
+.streamlit/machine_id*

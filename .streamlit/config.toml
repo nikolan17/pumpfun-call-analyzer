@@ -1,0 +1,15 @@
+# "Quant Terminal" theme — warm ink, hairline panels, brass accent.
+# Deliberately NOT the GitHub #0D1117 cliché; background is a warm near-black.
+[theme]
+base = "dark"
+primaryColor = "#E0A436"               # brass accent (used sparingly)
+backgroundColor = "#0B0C0E"            # warm near-black
+secondaryBackgroundColor = "#14161A"   # panel surface
+textColor = "#E6E3DB"                  # warm off-white (paper tone, not pure white)
+font = "monospace"
+
+[server]
+headless = true
+
+[browser]
+gatherUsageStats = false

@@ -1,0 +1,62 @@
+name: Daily call scan
+
+# Runs the web-source scan once a day and commits refreshed CSVs back to the repo,
+# so the dashboard always shows fresh data without anyone running it manually.
+
+on:
+  schedule:
+    # ┌ minute  ┌ hour (UTC)  ┌ day-of-month  ┌ month  ┌ day-of-week
+    # 06:00 UTC every day. Times are ALWAYS UTC (GitHub ignores local time zones).
+    #
+    # To change the schedule, edit the cron line below. Examples:
+    #   "0 6 * * *"    -> 06:00 UTC daily (current)
+    #   "30 13 * * *"  -> 13:30 UTC daily
+    #   "0 */6 * * *"  -> every 6 hours
+    #   "0 6 * * 1"    -> 06:00 UTC every Monday only
+    # Tip: https://crontab.guru helps you build/verify a cron expression.
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}   # also allow manual runs from the Actions tab ("Run workflow")
+
+# Allow the job to push commits using the built-in GITHUB_TOKEN (no PAT/secrets needed).
+permissions:
+  contents: write
+
+# If a manual run overlaps the scheduled one, let the newer run finish; don't pile up.
+concurrency:
+  group: daily-scan
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run daily scan (SOURCE="web", no secrets required)
+        # scan_telegram.py defaults to SOURCE="web" (public preview, no API key) and
+        # only re-analyzes new + last-7-days calls, so this stays fast & rate-limit-safe.
+        run: python scan_telegram.py
+
+      - name: Commit & push refreshed data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add calls_detected.csv calls_analysis.csv last_updated.txt
+          if git diff --staged --quiet; then
+            echo "No data changes to commit."
+          else
+            git commit -m "chore(data): daily call scan $(date -u +'%Y-%m-%dT%H:%MZ')"
+            git push
+          fi
